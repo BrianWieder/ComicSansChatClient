@@ -196,7 +196,9 @@ img {
 
 .type_msg {
     border-top: 1px solid #c4c4c4;
-    position: relative;
+    position: absolute;
+    bottom: 0;
+    width: 80%;
 }
 .msg_send_btn {
     background: #05728f none repeat scroll 0 0;
@@ -207,8 +209,8 @@ img {
     font-size: 17px;
     height: 33px;
     position: absolute;
-    right: 0;
-    top: 11px;
+    right: 10px;
+    bottom: 11px;
     width: 33px;
 }
 .messaging {

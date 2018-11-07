@@ -1,99 +1,91 @@
 import React, { Component } from 'react';
-import { Avatar } from '@material-ui/core';
 import IncomingMessage from './IncomingMessage';
 import OutgoingMessage from './OutgoingMessage';
 
-const styles = {
-    msgHistory: {
-        flex: 1,
-        overflow: 'scroll'
-    }
-};
-
 class ChatPanel extends Component {
+    componentDidMount() {
+        this.messagesEnd.scrollIntoView({ behavior: 'smooth' });
+    }
+
     render() {
         return (
             <div className="mesgs">
                 <div>
                     <IncomingMessage
                         profilePicture="/resources/BobSaget.jpg"
-                        message="Boi you think u funny but your hairline is lookin like the Mc.Donalds Symbol"
+                        message="How are you?"
                         name="Bob Saget"
                         date={new Date()}
                     />
                     <OutgoingMessage
-                        message="Hello Bob Saget"
+                        message="Good, Bob Saget, I'm having a great day"
                         date={new Date()}
                     />
                     <IncomingMessage
                         profilePicture="/resources/BobSaget.jpg"
-                        message="Ted Cruz ate my family"
+                        message="I'm glad!"
                         name="Bob Saget"
                         date={new Date()}
                     />
                     <OutgoingMessage
-                        message="Hello Bob Saget"
+                        message="How is your day?"
                         date={new Date()}
                     />
                     <IncomingMessage
                         profilePicture="/resources/BobSaget.jpg"
-                        message="Testing Testing 123"
+                        message="My day is great, just working on some programming!"
                         name="Bob Saget"
                         date={new Date()}
                     />
                     <OutgoingMessage
-                        message="Hello Bob Saget"
+                        message="Awesome! What are you programming?"
                         date={new Date()}
                     />
                     <IncomingMessage
                         profilePicture="/resources/BobSaget.jpg"
-                        message="Testing Testing 123"
+                        message="I'm programming a cool chat application!!"
                         name="Bob Saget"
                         date={new Date()}
                     />
                     <OutgoingMessage
-                        message="Hello Bob Saget"
+                        message="Does it use Comics Sans?"
                         date={new Date()}
                     />
                     <IncomingMessage
                         profilePicture="/resources/BobSaget.jpg"
-                        message="Testing Testing 123"
+                        message="No, it uses Times New Roman"
                         name="Bob Saget"
                         date={new Date()}
                     />
                     <OutgoingMessage
-                        message="Hello Bob Saget"
+                        message="Then my chat application is better, it is Comic Sans or nothing"
                         date={new Date()}
                     />
                     <IncomingMessage
                         profilePicture="/resources/BobSaget.jpg"
-                        message="Testing Testing 123"
+                        message="Ah you're right, I am going to change it to Comic Sans right away!"
                         name="Bob Saget"
                         date={new Date()}
                     />
                     <OutgoingMessage
-                        message="Hello Bob Saget"
+                        message="Good, I am looking forward to trying your app!"
                         date={new Date()}
                     />
                     <IncomingMessage
                         profilePicture="/resources/BobSaget.jpg"
-                        message="Testing Testing 123"
+                        message="Thanks!! I think your Comic Sans Chat app is great!"
                         name="Bob Saget"
                         date={new Date()}
                     />
                     <OutgoingMessage
-                        message="Hello Bob Saget"
+                        message="Thanks, I appreciate it!"
                         date={new Date()}
                     />
-                    <IncomingMessage
-                        profilePicture="/resources/BobSaget.jpg"
-                        message="Testing Testing 123"
-                        name="Bob Saget"
-                        date={new Date()}
-                    />
-                    <OutgoingMessage
-                        message="Hello Bob Saget"
-                        date={new Date()}
+                    <div
+                        style={{ float: 'left', clear: 'both' }}
+                        ref={el => {
+                            this.messagesEnd = el;
+                        }}
                     />
                 </div>
             </div>

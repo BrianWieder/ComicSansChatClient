@@ -154,9 +154,12 @@ class LoginPage extends Component {
                             variant="contained"
                             size="large"
                             color="primary"
-                            style={stylesCard.buttonStyle}
                             onClick={this.signIn.bind(this)}
-                            style={{ flex: 1, float: 'right' }}
+                            style={{
+                                ...stylesCard.buttonStyle,
+                                flex: 1,
+                                float: 'right'
+                            }}
                         >
                             Submit
                         </Button>
@@ -164,9 +167,8 @@ class LoginPage extends Component {
                             variant="contained"
                             size="large"
                             color="primary"
-                            style={stylesCard.buttonStyle}
                             onClick={this.signUpScreen.bind(this)}
-                            style={{ float: 'left' }}
+                            style={{ ...stylesCard.buttonStyle, float: 'left' }}
                         >
                             Sign Up
                         </Button>
@@ -211,9 +213,12 @@ class LoginPage extends Component {
                             variant="contained"
                             size="large"
                             color="primary"
-                            style={stylesCard.buttonStyle}
                             onClick={this.signUp.bind(this)}
-                            style={{ flex: 1, float: 'right' }}
+                            style={{
+                                ...stylesCard.buttonStyle,
+                                flex: 1,
+                                float: 'right'
+                            }}
                         >
                             Submit
                         </Button>
@@ -221,9 +226,8 @@ class LoginPage extends Component {
                             variant="contained"
                             size="large"
                             color="primary"
-                            style={stylesCard.buttonStyle}
                             onClick={this.loginScreen.bind(this)}
-                            style={{ float: 'left' }}
+                            style={{ ...stylesCard.buttonStyle, float: 'left' }}
                         >
                             Log In
                         </Button>

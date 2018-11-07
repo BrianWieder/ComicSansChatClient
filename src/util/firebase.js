@@ -1,4 +1,5 @@
-import firebase from 'firebase';
+import * as firebase from 'firebase/app';
+import 'firebase/auth';
 var config = {
     apiKey: 'AIzaSyB7780W1NWElLt08G9K8AxakK29ocEVwNs',
     authDomain: 'independent-studies-2018-2019.firebaseapp.com',

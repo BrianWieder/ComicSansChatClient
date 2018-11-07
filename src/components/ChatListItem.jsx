@@ -1,32 +1,12 @@
 import React, { Component } from 'react';
-import { Card, ListItem, Avatar, ListItemText } from '@material-ui/core';
-
-const styles = {
-    divStyle: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center'
-    },
-    nameStyle: {
-        marginLeft: 80,
-        marginTop: 35,
-        height: 45
-    },
-    profilePictureStyle: {
-        position: 'absolute',
-        float: 'left',
-        marginTop: 0,
-        marginLeft: 10,
-        marginBottom: 20
-    }
-};
+import { ListItem, Avatar, ListItemText } from '@material-ui/core';
 
 class ChatListItem extends Component {
     render() {
         return (
-            <ListItem button>
+            <ListItem button onClick={this.props.onChatItemClicked}>
                 <Avatar src="/resources/BobSaget.jpg" />
-                <ListItemText primary={`Bob Saget`} />
+                <ListItemText primary={this.props.name} />
             </ListItem>
         );
     }
