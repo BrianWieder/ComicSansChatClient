@@ -14,6 +14,8 @@ import ChatListItem from '../components/ChatListItem';
 import ChatPanel from '../components/ChatPanel';
 import NewChat from '../components/NewChat';
 import firebase from '../util/firebase';
+import { sendChat } from '../util/websocket';
+import { BASE_URL } from '../util/settings';
 
 const styles = theme => ({
     root: {
@@ -49,11 +51,48 @@ const styles = theme => ({
 const drawerWidth = 240;
 
 class ClippedDrawer extends Component {
-    state = { shouldShowNewChat: false };
+    state = {
+        shouldShowNewChat: false,
+        chats: [],
+        current_chat_id: undefined,
+        gotChats: false
+    };
+
+    getChats() {
+        firebase
+            .auth()
+            .currentUser.getIdToken(true)
+            .then(token => {
+                fetch(`${BASE_URL}/api/chats`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        authorization: token
+                    }
+                })
+                    .then(res => {
+                        return res.json();
+                    })
+                    .then(json => {
+                        let current_chat = undefined;
+                        if (json.length > 0) {
+                            current_chat = json[0].Chat_ID;
+                        }
+                        this.setState({
+                            chats: json,
+                            current_chat_id: current_chat
+                        });
+                    });
+            });
+    }
 
     render() {
         const { classes, user } = this.props;
         const { shouldShowNewChat } = this.state;
+
+        if (firebase.auth().currentUser && !this.state.gotChats) {
+            this.setState({ gotChats: true });
+            this.getChats();
+        }
 
         if (Object.keys(user).length === 0) {
             this.props.history.push('/Login');
@@ -100,116 +139,7 @@ class ClippedDrawer extends Component {
                             <ListItemText primary={`Create new Chat`} />
                         </ListItem>
                         <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 1.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 2.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 3.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 4.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 5.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 6.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 7.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 8.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 9.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 10.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 11.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 12.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 13.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 14.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 15.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 16.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 17.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 18.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 19.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 20.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 21.0'}
-                        />
-                        <Divider />
-                        <ChatListItem
-                            onChatItemClicked={() => this.onChatItemClicked()}
-                            name={'Bob Saget 22.0'}
-                        />
-                        <Divider />
+                        {this.renderChats()}
                     </List>
                 </Drawer>
                 {shouldShowNewChat ? this.renderNewChat() : this.renderChat()}
@@ -217,8 +147,32 @@ class ClippedDrawer extends Component {
         );
     }
 
-    onChatItemClicked() {
+    onChatCreated() {
         this.setState({ shouldShowNewChat: false });
+        this.getChats();
+    }
+
+    renderChats() {
+        let chats = [];
+        for (let i = 0; i < this.state.chats.length; i++) {
+            chats.push(
+                <div key={this.state.chats[i]['Chat_ID']}>
+                    <ChatListItem
+                        chat_id={this.state.chats[i]['Chat_ID']}
+                        onChatItemClicked={chat_id =>
+                            this.onChatItemClicked(chat_id)
+                        }
+                        name={this.state.chats[i]['chat_name']}
+                    />
+                    <Divider />
+                </div>
+            );
+        }
+        return chats;
+    }
+
+    onChatItemClicked(chat_id) {
+        this.setState({ shouldShowNewChat: false, current_chat_id: chat_id });
     }
 
     signOut() {
@@ -235,10 +189,25 @@ class ClippedDrawer extends Component {
         const containerStr = `${classes.content} main-content`;
         return (
             <main className={containerStr}>
-                <NewChat />
+                <NewChat onNewChat={this.onChatCreated.bind(this)} />
             </main>
         );
     }
+
+    sendChatTest() {
+        const { inputText, current_chat_id } = this.state;
+
+        if (inputText) {
+            sendChat(current_chat_id, inputText);
+            this.setState({ inputText: '' });
+        }
+    }
+
+    _handleKeyPress = e => {
+        if (e.key === 'Enter') {
+            this.sendChatTest();
+        }
+    };
 
     renderChat() {
         const { classes } = this.props;
@@ -247,15 +216,24 @@ class ClippedDrawer extends Component {
         return (
             <main className={containerStr}>
                 <div />
-                <ChatPanel />
+                <ChatPanel chat_id={this.state.current_chat_id} />
                 <div className="type_msg">
                     <div className="input_msg_write">
                         <input
                             type="text"
                             className="write_msg"
                             placeholder="Type a message"
+                            onChange={text => {
+                                this.setState({ inputText: text.target.value });
+                            }}
+                            value={this.state.inputText}
+                            onKeyPress={this._handleKeyPress.bind(this)}
                         />
-                        <button className="msg_send_btn" type="button">
+                        <button
+                            className="msg_send_btn"
+                            type="button"
+                            onClick={() => this.sendChatTest()}
+                        >
                             <i
                                 className="far fa-paper-plane"
                                 aria-hidden="true"

@@ -213,6 +213,14 @@ img {
     bottom: 11px;
     width: 33px;
 }
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: none;
+}
+
 .messaging {
     padding: 0 0 50px 0;
 }

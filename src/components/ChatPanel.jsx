@@ -1,86 +1,96 @@
 import React, { Component } from 'react';
 import IncomingMessage from './IncomingMessage';
 import OutgoingMessage from './OutgoingMessage';
+import firebase from '../util/firebase';
+import { setupChatCallback } from '../util/websocket';
+
+import { BASE_URL } from '../util/settings';
 
 class ChatPanel extends Component {
+    state = { messages: [] };
+
+    componentWillReceiveProps(nextProps) {
+        // You don't have to do this check first, but it can help prevent an unneeded render
+        if (nextProps.startTime !== this.state.startTime) {
+            this.setState({ startTime: nextProps.startTime });
+        }
+
+        if (nextProps.chat_id && firebase.auth().currentUser) {
+            firebase
+                .auth()
+                .currentUser.getIdToken(true)
+                .then(token => {
+                    fetch(
+                        `${BASE_URL}/api/chats/messages/${nextProps.chat_id}`,
+                        {
+                            headers: {
+                                authorization: token
+                            }
+                        }
+                    )
+                        .then(res => {
+                            return res.json();
+                        })
+                        .then(json => {
+                            this.setState({ messages: json });
+                            this.messagesEnd.scrollIntoView({
+                                behavior: 'smooth'
+                            });
+                        });
+                });
+        }
+    }
+
     componentDidMount() {
-        this.messagesEnd.scrollIntoView({ behavior: 'smooth' });
+        setupChatCallback(message => {
+            const { messages } = this.state;
+            messages.push(message);
+            this.setState({ messages });
+            this.messagesEnd.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    renderMessages() {
+        if (firebase.auth().currentUser) {
+            const { messages } = this.state;
+            let messagesObj = [];
+            for (let i = 0; i < messages.length; i++) {
+                if (messages[i].Owner === firebase.auth().currentUser.uid) {
+                    messagesObj.push(
+                        <OutgoingMessage
+                            message={messages[i].Message}
+                            date={
+                                new Date(
+                                    messages[i].Time_Sent.replace(' ', 'T')
+                                )
+                            }
+                        />
+                    );
+                } else {
+                    messagesObj.push(
+                        <IncomingMessage
+                            message={messages[i].Message}
+                            date={
+                                new Date(
+                                    messages[i].Time_Sent.replace(' ', 'T')
+                                )
+                            }
+                            name={messages[i].name}
+                            profilePicture={messages[i].profile_picture}
+                        />
+                    );
+                }
+            }
+
+            return messagesObj;
+        }
     }
 
     render() {
         return (
             <div className="mesgs">
                 <div>
-                    <IncomingMessage
-                        profilePicture="/resources/BobSaget.jpg"
-                        message="How are you?"
-                        name="Bob Saget"
-                        date={new Date()}
-                    />
-                    <OutgoingMessage
-                        message="Good, Bob Saget, I'm having a great day"
-                        date={new Date()}
-                    />
-                    <IncomingMessage
-                        profilePicture="/resources/BobSaget.jpg"
-                        message="I'm glad!"
-                        name="Bob Saget"
-                        date={new Date()}
-                    />
-                    <OutgoingMessage
-                        message="How is your day?"
-                        date={new Date()}
-                    />
-                    <IncomingMessage
-                        profilePicture="/resources/BobSaget.jpg"
-                        message="My day is great, just working on some programming!"
-                        name="Bob Saget"
-                        date={new Date()}
-                    />
-                    <OutgoingMessage
-                        message="Awesome! What are you programming?"
-                        date={new Date()}
-                    />
-                    <IncomingMessage
-                        profilePicture="/resources/BobSaget.jpg"
-                        message="I'm programming a cool chat application!!"
-                        name="Bob Saget"
-                        date={new Date()}
-                    />
-                    <OutgoingMessage
-                        message="Does it use Comics Sans?"
-                        date={new Date()}
-                    />
-                    <IncomingMessage
-                        profilePicture="/resources/BobSaget.jpg"
-                        message="No, it uses Times New Roman"
-                        name="Bob Saget"
-                        date={new Date()}
-                    />
-                    <OutgoingMessage
-                        message="Then my chat application is better, it is Comic Sans or nothing"
-                        date={new Date()}
-                    />
-                    <IncomingMessage
-                        profilePicture="/resources/BobSaget.jpg"
-                        message="Ah you're right, I am going to change it to Comic Sans right away!"
-                        name="Bob Saget"
-                        date={new Date()}
-                    />
-                    <OutgoingMessage
-                        message="Good, I am looking forward to trying your app!"
-                        date={new Date()}
-                    />
-                    <IncomingMessage
-                        profilePicture="/resources/BobSaget.jpg"
-                        message="Thanks!! I think your Comic Sans Chat app is great!"
-                        name="Bob Saget"
-                        date={new Date()}
-                    />
-                    <OutgoingMessage
-                        message="Thanks, I appreciate it!"
-                        date={new Date()}
-                    />
+                    {this.renderMessages()}
                     <div
                         style={{ float: 'left', clear: 'both' }}
                         ref={el => {

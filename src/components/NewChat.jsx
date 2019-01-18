@@ -10,6 +10,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import CancelIcon from '@material-ui/icons/Cancel';
 import { emphasize } from '@material-ui/core/styles/colorManipulator';
 import Button from '@material-ui/core/Button';
+import { Input } from '@material-ui/core';
+import firebase from '../util/firebase';
+import { BASE_URL } from '../util/settings';
 
 const styles = theme => ({
     root: {
@@ -178,41 +181,43 @@ const components = {
     ValueContainer
 };
 
-const suggestions = [
-    { label: 'Bob Saget' },
-    { label: 'Bob Saget 2.0' },
-    { label: 'Devin Hux' },
-    { label: 'Brian Wieder' },
-    { label: 'JT Mast' },
-    { label: 'Nick Williams' },
-    { label: 'Ben Setaro' },
-    { label: 'William Strom' },
-    { label: 'Haley Nordgaard' },
-    { label: 'Raygan Harrington' },
-    { label: 'Mr.Deleon' },
-    { label: 'Jackson Burkey' },
-    { label: 'Sam Hurlock' },
-    { label: 'Josh Hubbard' },
-    { label: 'John Edwards' },
-    { label: 'Alissa Barber' },
-    { label: 'Casey Evans' },
-    { label: 'Lucas Franke' },
-    { label: 'Joseph Frank' },
-    { label: 'Tanner Brooks' }
-].map(suggestion => ({
-    value: suggestion.label,
-    label: suggestion.label
-}));
-
 class NewChat extends Component {
     state = {
-        names: null
+        names: null,
+        suggestions: [],
+        chat_name: ''
     };
     handleChange = name => value => {
         this.setState({
             names: value
         });
     };
+
+    componentDidMount() {
+        fetch(`${BASE_URL}/api/users`)
+            .then(res => {
+                return res.json();
+            })
+            .then(json => {
+                let users = [];
+                for (let i = 0; i < json.length; i++) {
+                    if (json[i].ID !== firebase.auth().currentUser.uid) {
+                        users.push({ label: json[i].name, id: json[i].ID });
+                    }
+                }
+                this.setState({
+                    suggestions: users.map(suggestion => ({
+                        value: suggestion.label,
+                        label: suggestion.label,
+                        id: suggestion.id
+                    }))
+                });
+            });
+    }
+
+    handleChatNameChange(event) {
+        this.setState({ chat_name: event.target.value });
+    }
 
     render() {
         const { classes, theme } = this.props;
@@ -228,6 +233,15 @@ class NewChat extends Component {
         };
         return (
             <div style={{ marginTop: 60 }}>
+                <Input
+                    onChange={this.handleChatNameChange.bind(this)}
+                    type="text"
+                    value={this.state.chat_name}
+                    placeholder="Chat Name"
+                    style={{ marginBottom: 20 }}
+                    fullWidth
+                />
+
                 <Select
                     classes={classes}
                     styles={selectStyles}
@@ -237,7 +251,7 @@ class NewChat extends Component {
                             shrink: true
                         }
                     }}
-                    options={suggestions}
+                    options={this.state.suggestions}
                     components={components}
                     value={this.state.multi}
                     onChange={this.handleChange('multi')}
@@ -256,7 +270,26 @@ class NewChat extends Component {
     }
 
     onCreateChatClicked() {
-        console.log(JSON.stringify(this.state.multi));
+        if (this.state.chat_name) {
+            firebase
+                .auth()
+                .currentUser.getIdToken(true)
+                .then(token => {
+                    fetch(`${BASE_URL}/api/chats`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            chat_name: this.state.chat_name,
+                            members: this.state.names
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json',
+                            authorization: token
+                        }
+                    }).then(() => {
+                        this.props.onNewChat();
+                    });
+                });
+        }
     }
 }
 

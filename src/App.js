@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import firebase from './util/firebase';
 import ChatPage from './pages/ChatPage';
 import LoginPage from './pages/LoginPage';
+import { socketConnect } from './util/websocket';
 
 class App extends Component {
     state = {
@@ -36,6 +37,7 @@ class App extends Component {
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
                 this.setState({ user });
+                socketConnect();
             } else {
                 // User is signed out.
                 // ...

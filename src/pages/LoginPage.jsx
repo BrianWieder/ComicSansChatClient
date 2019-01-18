@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core';
 
 import firebase from '../util/firebase';
+import { BASE_URL } from '../util/settings';
 
 const styles = theme => ({
     root: {
@@ -74,6 +75,8 @@ class LoginPage extends Component {
         email: '',
         password: '',
         error: '',
+        name: '',
+        profilePicture: '',
         signUpScreen: false
     };
 
@@ -207,6 +210,29 @@ class LoginPage extends Component {
                             this.passwordChanged(event.target.value)
                         }
                     />
+                    <TextField
+                        id="password-input"
+                        label="Name"
+                        type="text"
+                        autoComplete="name"
+                        margin="normal"
+                        fullWidth
+                        value={this.state.name}
+                        error={this.state.error !== ''}
+                        onChange={event => this.nameChanged(event.target.value)}
+                    />
+                    <TextField
+                        id="password-input"
+                        label="Profile Picture"
+                        type="text"
+                        margin="normal"
+                        fullWidth
+                        value={this.state.profilePicture}
+                        error={this.state.error !== ''}
+                        onChange={event =>
+                            this.profilePictureChanged(event.target.value)
+                        }
+                    />
                     {errorMsg}
                     <div>
                         <Button
@@ -247,6 +273,14 @@ class LoginPage extends Component {
         this.setState({ password });
     }
 
+    nameChanged(name) {
+        this.setState({ name });
+    }
+
+    profilePictureChanged(profilePicture) {
+        this.setState({ profilePicture });
+    }
+
     signIn() {
         const { email, password } = this.state;
 
@@ -270,7 +304,7 @@ class LoginPage extends Component {
     }
 
     signUp() {
-        const { email, password } = this.state;
+        const { email, password, name, profilePicture } = this.state;
 
         if (email === '' || email === undefined) {
             this.setState({ error: 'Email is required' });
@@ -285,6 +319,24 @@ class LoginPage extends Component {
         firebase
             .auth()
             .createUserWithEmailAndPassword(email, password)
+            .then(() => {
+                firebase
+                    .auth()
+                    .currentUser.getIdToken(true)
+                    .then(token => {
+                        fetch(`${BASE_URL}/api/users`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                name,
+                                profile_picture: profilePicture
+                            }),
+                            headers: {
+                                'Content-Type': 'application/json',
+                                authorization: token
+                            }
+                        });
+                    });
+            })
             .catch(error => {
                 this.setState({ error: error.message });
             });
